@@ -1,0 +1,52 @@
+{
+  "kind": "singleType",
+  "collectionName": "card_landing_pages",
+  "info": {
+    "singularName": "card-landing-page",
+    "pluralName": "card-landing-pages",
+    "displayName": "Card Landing Page",
+    "description": "CMS-managed Corporate and Business Cards landing page"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "pageTitle": {
+      "type": "string",
+      "required": true,
+      "maxLength": 120
+    },
+    "pageDescription": {
+      "type": "text",
+      "required": true
+    },
+    "discoveryText": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "hero": {
+      "type": "component",
+      "component": "shared.hero",
+      "repeatable": false,
+      "required": true
+    },
+    "sections": {
+      "type": "dynamiczone",
+      "components": [
+        "cards.product-section",
+        "cards.promotion-banner",
+        "cards.app-promotion"
+      ],
+      "required": true,
+      "min": 1
+    },
+    "seo": {
+      "type": "component",
+      "component": "shared.seo",
+      "repeatable": false,
+      "required": true
+    }
+  }
+}
+

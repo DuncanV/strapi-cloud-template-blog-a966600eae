@@ -1,0 +1,33 @@
+{
+  "collectionName": "components_shared_ctas",
+  "info": {
+    "displayName": "CTA",
+    "description": "Configurable internal, external, application or callback action"
+  },
+  "options": {},
+  "attributes": {
+    "label": {
+      "type": "string",
+      "maxLength": 60,
+      "required": true
+    },
+    "url": {
+      "type": "string",
+      "maxLength": 2048,
+      "required": true
+    },
+    "class": {
+      "type": "enumeration",
+      "required": true,
+      "default": "primary",
+      "enum": [
+        "primary",
+        "secondary"
+      ]
+    },
+    "openInNewTab": {
+      "type": "boolean",
+      "default": false
+    }
+  }
+}

@@ -1,0 +1,105 @@
+{
+  "kind": "collectionType",
+  "collectionName": "card_products",
+  "info": {
+    "singularName": "card-product",
+    "pluralName": "card-products",
+    "displayName": "Card Product",
+    "description": "Reusable business card product displayed on CMS-driven pages"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "productName": {
+      "type": "string",
+      "maxLength": 120,
+      "required": true
+    },
+    "slug": {
+      "type": "uid",
+      "targetField": "productName",
+      "required": true
+    },
+    "productCode": {
+      "type": "string",
+      "maxLength": 50,
+      "unique": true
+    },
+    "category": {
+      "type": "enumeration",
+      "required": true,
+      "enum": [
+        "sme",
+        "commercial"
+      ]
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "imageAltText": {
+      "type": "string",
+      "maxLength": 160,
+      "required": true
+    },
+    "monthlyFee": {
+      "type": "decimal",
+      "min": 0
+    },
+    "feeDisplay": {
+      "type": "string",
+      "maxLength": 80
+    },
+    "accountType": {
+      "type": "string",
+      "maxLength": 100
+    },
+    "shortDescription": {
+      "type": "text",
+      "required": true
+    },
+    "benefits": {
+      "type": "component",
+      "component": "shared.text-item",
+      "repeatable": true
+    },
+    "detailUrl": {
+      "type": "string",
+      "maxLength": 2048
+    },
+    "primaryCta": {
+      "type": "component",
+      "component": "shared.cta",
+      "repeatable": false
+    },
+    "secondaryCta": {
+      "type": "component",
+      "component": "shared.cta",
+      "repeatable": false
+    },
+    "compareEnabled": {
+      "type": "boolean",
+      "default": false
+    },
+    "comparisonAttributes": {
+      "type": "component",
+      "component": "cards.comparison-attribute",
+      "repeatable": true
+    },
+    "displayOrder": {
+      "type": "integer",
+      "default": 0,
+      "min": 0
+    },
+    "active": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

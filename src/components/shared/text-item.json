@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_shared_text_items",
+  "info": {
+    "displayName": "text_item",
+    "icon": "book"
+  },
+  "options": {},
+  "attributes": {
+    "text": {
+      "type": "string",
+      "required": true
+    }
+  },
+  "config": {}
+}
