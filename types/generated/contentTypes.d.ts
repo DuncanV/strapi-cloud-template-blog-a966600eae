@@ -444,7 +444,6 @@ export interface ApiCardLandingPageCardLandingPage
   extends Struct.SingleTypeSchema {
   collectionName: 'card_landing_pages';
   info: {
-    description: 'CMS-managed Corporate and Business Cards landing page';
     displayName: 'Card Landing Page';
     pluralName: 'card-landing-pages';
     singularName: 'card-landing-page';
@@ -456,10 +455,6 @@ export interface ApiCardLandingPageCardLandingPage
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    discoveryText: Schema.Attribute.String &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 80;
-      }>;
     hero: Schema.Attribute.Component<'shared.hero', false> &
       Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
@@ -468,23 +463,8 @@ export interface ApiCardLandingPageCardLandingPage
       'api::card-landing-page.card-landing-page'
     > &
       Schema.Attribute.Private;
-    pageDescription: Schema.Attribute.Text & Schema.Attribute.Required;
-    pageTitle: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 120;
-      }>;
+    productSection: Schema.Attribute.Component<'cards.product-section', true>;
     publishedAt: Schema.Attribute.DateTime;
-    sections: Schema.Attribute.DynamicZone<
-      ['cards.product-section', 'cards.promotion-banner', 'cards.app-promotion']
-    > &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMax<
-        {
-          min: 1;
-        },
-        number
-      >;
     seo: Schema.Attribute.Component<'shared.seo', false> &
       Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
@@ -496,7 +476,6 @@ export interface ApiCardLandingPageCardLandingPage
 export interface ApiCardProductCardProduct extends Struct.CollectionTypeSchema {
   collectionName: 'card_products';
   info: {
-    description: 'Reusable business card product displayed on CMS-driven pages';
     displayName: 'Card Product';
     pluralName: 'card-products';
     singularName: 'card-product';
@@ -505,73 +484,26 @@ export interface ApiCardProductCardProduct extends Struct.CollectionTypeSchema {
     draftAndPublish: true;
   };
   attributes: {
-    accountType: Schema.Attribute.String &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 100;
-      }>;
-    active: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<true>;
-    benefits: Schema.Attribute.Component<'shared.text-item', true>;
-    category: Schema.Attribute.Enumeration<['sme', 'commercial']> &
-      Schema.Attribute.Required;
-    compareEnabled: Schema.Attribute.Boolean &
-      Schema.Attribute.DefaultTo<false>;
-    comparisonAttributes: Schema.Attribute.Component<
-      'cards.comparison-attribute',
-      true
-    >;
+    accountType: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
-    detailUrl: Schema.Attribute.String &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 2048;
-      }>;
-    displayOrder: Schema.Attribute.Integer &
-      Schema.Attribute.SetMinMax<
-        {
-          min: 0;
-        },
-        number
-      > &
-      Schema.Attribute.DefaultTo<0>;
-    feeDisplay: Schema.Attribute.String &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 80;
-      }>;
+    description: Schema.Attribute.Text & Schema.Attribute.Required;
     image: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
-    imageAltText: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 160;
-      }>;
+    imageAltText: Schema.Attribute.String & Schema.Attribute.Required;
     locale: Schema.Attribute.String & Schema.Attribute.Private;
     localizations: Schema.Attribute.Relation<
       'oneToMany',
       'api::card-product.card-product'
     > &
       Schema.Attribute.Private;
-    monthlyFee: Schema.Attribute.Decimal &
-      Schema.Attribute.SetMinMax<
-        {
-          min: 0;
-        },
-        number
-      >;
+    monthlyFee: Schema.Attribute.String;
     primaryCta: Schema.Attribute.Component<'shared.cta', false>;
-    productCode: Schema.Attribute.String &
-      Schema.Attribute.Unique &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 50;
-      }>;
-    productName: Schema.Attribute.String &
-      Schema.Attribute.Required &
-      Schema.Attribute.SetMinMaxLength<{
-        maxLength: 120;
-      }>;
+    productCode: Schema.Attribute.String & Schema.Attribute.Required;
+    productName: Schema.Attribute.String & Schema.Attribute.Required;
     publishedAt: Schema.Attribute.DateTime;
     secondaryCta: Schema.Attribute.Component<'shared.cta', false>;
-    shortDescription: Schema.Attribute.Text & Schema.Attribute.Required;
-    slug: Schema.Attribute.UID<'productName'> & Schema.Attribute.Required;
+    slug: Schema.Attribute.UID & Schema.Attribute.Required;
     updatedAt: Schema.Attribute.DateTime;
     updatedBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;

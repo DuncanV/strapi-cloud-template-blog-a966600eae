@@ -1,17 +1,36 @@
 {
   "collectionName": "components_shared_seos",
   "info": {
-    "displayName": "SEO",
-    "description": "Search and social sharing metadata"
+    "displayName": "Seo",
+    "icon": "earth"
   },
   "options": {},
   "attributes": {
-    "metaTitle": { "type": "string", "required": true, "maxLength": 60 },
-    "metaDescription": { "type": "text", "required": true, "maxLength": 160 },
-    "canonicalUrl": { "type": "string", "maxLength": 2048 },
-    "shareImage": { "type": "media", "multiple": false, "allowedTypes": ["images"] },
-    "noIndex": { "type": "boolean", "default": false },
-    "structuredData": { "type": "json" }
-  }
+    "metaTitle": {
+      "type": "string",
+      "required": true
+    },
+    "metaDescription": {
+      "type": "text",
+      "required": true
+    },
+    "canonicalUrl": {
+      "type": "string"
+    },
+    "favicon": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "noIndex": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "config": {}
 }
-

@@ -2,15 +2,35 @@
   "collectionName": "components_shared_heroes",
   "info": {
     "displayName": "Hero",
-    "description": "Page hero content"
+    "icon": "picture"
   },
   "options": {},
   "attributes": {
-    "heading": { "type": "string", "required": true, "maxLength": 120 },
-    "description": { "type": "text", "required": true },
-    "image": { "type": "media", "multiple": false, "required": true, "allowedTypes": ["images"] },
-    "imageAltText": { "type": "string", "required": true, "maxLength": 160 },
-    "cta": { "type": "component", "component": "shared.cta", "repeatable": false }
-  }
+    "heading": {
+      "type": "text",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "imageAltText": {
+      "type": "string",
+      "required": true,
+      "unique": false
+    },
+    "cta": {
+      "type": "component",
+      "component": "shared.cta",
+      "repeatable": false
+    }
+  },
+  "config": {}
 }
-

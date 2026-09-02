@@ -2,21 +2,27 @@
   "collectionName": "components_cards_product_sections",
   "info": {
     "displayName": "Product Section",
-    "description": "Category section containing reusable card products"
+    "icon": "grid"
   },
   "options": {},
   "attributes": {
-    "sectionKey": { "type": "string", "required": true, "maxLength": 80 },
-    "title": { "type": "string", "required": true, "maxLength": 120 },
-    "description": { "type": "text" },
-    "link": { "type": "component", "component": "shared.cta", "repeatable": false },
-    "products": {
+    "title": {
+      "type": "string",
+      "required": true
+    },
+    "description": {
+      "type": "text"
+    },
+    "card_products": {
       "type": "relation",
       "relation": "oneToMany",
       "target": "api::card-product.card-product"
     },
-    "enabled": { "type": "boolean", "default": true },
-    "trackingId": { "type": "string", "maxLength": 100 }
-  }
+    "banner": {
+      "type": "component",
+      "component": "shared.hero",
+      "repeatable": false
+    }
+  },
+  "config": {}
 }
-
