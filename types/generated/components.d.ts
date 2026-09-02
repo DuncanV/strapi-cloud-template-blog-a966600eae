@@ -36,6 +36,30 @@ export interface SharedCta extends Struct.ComponentSchema {
   };
 }
 
+export interface SharedFooterSection extends Struct.ComponentSchema {
+  collectionName: 'components_shared_footer_sections';
+  info: {
+    displayName: 'FooterSection';
+    icon: 'rocket';
+  };
+  attributes: {
+    heading: Schema.Attribute.String & Schema.Attribute.Required;
+    linkSection: Schema.Attribute.Component<'shared.link', true>;
+  };
+}
+
+export interface SharedHeaderSection extends Struct.ComponentSchema {
+  collectionName: 'components_shared_header_sections';
+  info: {
+    displayName: 'HeaderSection';
+    icon: 'alien';
+  };
+  attributes: {
+    heading: Schema.Attribute.String & Schema.Attribute.Required;
+    linkSection: Schema.Attribute.Component<'shared.link', true>;
+  };
+}
+
 export interface SharedHero extends Struct.ComponentSchema {
   collectionName: 'components_shared_heroes';
   info: {
@@ -48,6 +72,19 @@ export interface SharedHero extends Struct.ComponentSchema {
     heading: Schema.Attribute.Text & Schema.Attribute.Required;
     image: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
     imageAltText: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface SharedLink extends Struct.ComponentSchema {
+  collectionName: 'components_shared_links';
+  info: {
+    displayName: 'Link';
+    icon: 'earth';
+  };
+  attributes: {
+    displayText: Schema.Attribute.String & Schema.Attribute.Required;
+    openInNewTab: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
+    url: Schema.Attribute.String & Schema.Attribute.Required;
   };
 }
 
@@ -71,7 +108,10 @@ declare module '@strapi/strapi' {
     export interface ComponentSchemas {
       'cards.product-section': CardsProductSection;
       'shared.cta': SharedCta;
+      'shared.footer-section': SharedFooterSection;
+      'shared.header-section': SharedHeaderSection;
       'shared.hero': SharedHero;
+      'shared.link': SharedLink;
       'shared.seo': SharedSeo;
     }
   }

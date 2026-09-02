@@ -1,0 +1,20 @@
+{
+  "collectionName": "components_shared_footer_sections",
+  "info": {
+    "displayName": "FooterSection",
+    "icon": "rocket"
+  },
+  "options": {},
+  "attributes": {
+    "heading": {
+      "type": "string",
+      "required": true
+    },
+    "linkSection": {
+      "type": "component",
+      "component": "shared.link",
+      "repeatable": true
+    }
+  },
+  "config": {}
+}

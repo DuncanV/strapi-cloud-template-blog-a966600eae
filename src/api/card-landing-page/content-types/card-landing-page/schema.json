@@ -11,6 +11,11 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "header": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::header.header"
+    },
     "hero": {
       "type": "component",
       "component": "shared.hero",
@@ -21,6 +26,11 @@
       "type": "component",
       "component": "cards.product-section",
       "repeatable": true
+    },
+    "footer": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::footer.footer"
     },
     "seo": {
       "type": "component",
