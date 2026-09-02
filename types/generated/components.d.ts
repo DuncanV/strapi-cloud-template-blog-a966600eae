@@ -32,6 +32,7 @@ export interface SharedCta extends Struct.ComponentSchema {
     type: Schema.Attribute.Enumeration<['url', 'action']> &
       Schema.Attribute.Required &
       Schema.Attribute.DefaultTo<'url'>;
+    url: Schema.Attribute.String;
   };
 }
 

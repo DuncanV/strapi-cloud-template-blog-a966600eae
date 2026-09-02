@@ -31,6 +31,9 @@
     "openInNewTab": {
       "type": "boolean",
       "default": false
+    },
+    "url": {
+      "type": "string"
     }
   },
   "config": {}
