@@ -11,6 +11,10 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "slug": {
+      "type": "uid",
+      "required": true
+    },
     "footerSection": {
       "type": "component",
       "component": "shared.footer-section",

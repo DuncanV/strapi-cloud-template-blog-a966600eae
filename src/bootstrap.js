@@ -24,6 +24,95 @@ async function seedExampleApp() {
   }
 }
 
+const CUSTOM_ADMIN_ROLES = [
+  {
+    name: 'Page Creator',
+    description: 'Can create and edit pages, but cannot publish or unpublish them',
+  },
+  {
+    name: 'Page Publisher',
+    description: 'Can review, publish, and unpublish pages',
+  },
+];
+
+const PAGE_CONTENT_TYPE = 'api::page.page';
+const PAGE_CONTENT_TYPE_FIELDS = [
+  'slug',
+  'workflowStatus',
+  'seo.metaTitle',
+  'seo.metaDescription',
+  'seo.canonicalUrl',
+  'seo.keywords',
+  'seo.favicon',
+  'seo.noIndex',
+  'header',
+  'footer',
+  'pageBody',
+];
+
+const PAGE_ROLE_ACTIONS = {
+  'Page Creator': ['create', 'read', 'update'],
+  'Page Publisher': ['create', 'read', 'update', 'publish', 'delete'],
+};
+
+const ACTIONS_WITHOUT_FIELDS_PROPERTY = ['publish', 'delete'];
+
+async function createCustomAdminRoles() {
+  const roleService = strapi.service('admin::role');
+
+  for (const role of CUSTOM_ADMIN_ROLES) {
+    const alreadyExists = await roleService.exists({ name: role.name });
+    if (alreadyExists) {
+      console.log(`Admin role "${role.name}" already exists, skipping`);
+      continue;
+    }
+    await roleService.create(role);
+    console.log(`Created admin role "${role.name}"`);
+  }
+}
+
+async function assignPageContentTypePermissions() {
+  const roleService = strapi.service('admin::role');
+  const permissionService = strapi.service('admin::permission');
+
+  for (const [roleName, actions] of Object.entries(PAGE_ROLE_ACTIONS)) {
+    const [role] = await roleService.find({ name: roleName });
+    if (!role) {
+      console.log(`Admin role "${roleName}" not found, skipping permission assignment`);
+      continue;
+    }
+
+    const existingActions = new Set(
+      (
+        await strapi.db.query('admin::permission').findMany({
+          where: { role: role.id, subject: PAGE_CONTENT_TYPE },
+        })
+      ).map((permission) => permission.action)
+    );
+
+    const missingActions = actions.filter(
+      (action) => !existingActions.has(`plugin::content-manager.explorer.${action}`)
+    );
+    if (missingActions.length === 0) {
+      console.log(`Role "${roleName}" already has all required permissions for "${PAGE_CONTENT_TYPE}", skipping`);
+      continue;
+    }
+
+    await permissionService.createMany(
+      missingActions.map((action) => ({
+        action: `plugin::content-manager.explorer.${action}`,
+        subject: PAGE_CONTENT_TYPE,
+        properties: ACTIONS_WITHOUT_FIELDS_PROPERTY.includes(action)
+          ? {}
+          : { fields: PAGE_CONTENT_TYPE_FIELDS },
+        conditions: [],
+        role: role.id,
+      }))
+    );
+    console.log(`Assigned "${PAGE_CONTENT_TYPE}" permissions (${missingActions.join(', ')}) to role "${roleName}"`);
+  }
+}
+
 async function isFirstRun() {
   const pluginStore = strapi.store({
     environment: strapi.config.environment,
@@ -270,5 +359,7 @@ async function main() {
 
 
 module.exports = async () => {
+  await createCustomAdminRoles();
+  await assignPageContentTypePermissions();
   await seedExampleApp();
 };

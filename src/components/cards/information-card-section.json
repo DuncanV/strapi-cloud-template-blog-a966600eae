@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_cards_information_card_sections",
+  "info": {
+    "displayName": "Information Card Section"
+  },
+  "options": {},
+  "attributes": {
+    "informationCards": {
+      "type": "component",
+      "component": "cards.information-card",
+      "repeatable": true
+    }
+  },
+  "config": {}
+}

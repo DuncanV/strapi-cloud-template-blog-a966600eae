@@ -1,0 +1,41 @@
+{
+  "collectionName": "components_cards_product_cards",
+  "info": {
+    "displayName": "Product Card"
+  },
+  "options": {},
+  "attributes": {
+    "productName": {
+      "type": "string",
+      "required": true
+    },
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "imageAltText": {
+      "type": "string",
+      "required": true
+    },
+    "monthlyFee": {
+      "type": "string"
+    },
+    "accountType": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string",
+      "required": true
+    },
+    "cta": {
+      "type": "component",
+      "component": "shared.cta",
+      "repeatable": true
+    }
+  },
+  "config": {}
+}

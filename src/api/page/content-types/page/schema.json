@@ -1,0 +1,58 @@
+{
+  "kind": "collectionType",
+  "collectionName": "pages",
+  "info": {
+    "singularName": "page",
+    "pluralName": "pages",
+    "displayName": "Page"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "slug": {
+      "type": "uid",
+      "required": true
+    },
+    "workflowStatus": {
+      "type": "enumeration",
+      "required": true,
+      "default": "Draft",
+      "enum": [
+        "Draft",
+        "Review",
+        "Approved"
+      ]
+    },
+    "seo": {
+      "type": "component",
+      "component": "shared.seo",
+      "repeatable": false
+    },
+    "header": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::header.header"
+    },
+    "footer": {
+      "type": "relation",
+      "relation": "oneToOne",
+      "target": "api::footer.footer"
+    },
+    "pageBody": {
+      "type": "dynamiczone",
+      "components": [
+        "shared.video",
+        "shared.link",
+        "shared.hero",
+        "shared.heading",
+        "shared.description",
+        "shared.cta",
+        "cards.icon-card-section",
+        "cards.information-card-section",
+        "cards.product-card-section"
+      ]
+    }
+  }
+}
