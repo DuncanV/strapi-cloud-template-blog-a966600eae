@@ -1,20 +1,9 @@
 'use strict';
-const fs = require('fs');
-const path = require('path');
 const bootstrap = require("./bootstrap");
 const { errors } = require('@strapi/utils');
 const isEqual = require('lodash/isEqual');
 
 const { ApplicationError } = errors;
-
-const DEBUG_LOG_PATH = path.join(__dirname, '..', '.tmp', 'workflow-status-debug.log');
-function debugLog(message) {
-  try {
-    fs.appendFileSync(DEBUG_LOG_PATH, `[${new Date().toISOString()}] ${message}\n`);
-  } catch (e) {
-    // best-effort debug logging only
-  }
-}
 
 // Content types that must have workflowStatus === 'Approved' before they can be published
 const APPROVAL_GATED_CONTENT_TYPES = ['api::page.page'];
@@ -195,16 +184,40 @@ function hasContentChangedBesidesWorkflowStatus(strapi, uid, data, existing) {
       continue;
     }
 
-    const changed = !isEqual(incoming, current);
-    debugLog(
-      `field "${key}" changed=${changed} incoming=${JSON.stringify(incoming)} current=${JSON.stringify(current)}`
-    );
-    if (changed) {
+    if (!isEqual(incoming, current)) {
       anyChanged = true;
     }
   }
 
   return anyChanged;
+}
+
+// Notifies REVIEW_NOTIFICATION_EMAIL whenever a page's workflowStatus newly transitions into
+// "Review" on save — not on every save while it stays in Review (e.g. an editor tweaking a
+// field without changing the status again shouldn't re-fire the notification).
+async function notifyIfEnteringReview(strapi, uid, documentId, previousWorkflowStatus, effectiveWorkflowStatus) {
+  if (effectiveWorkflowStatus !== 'Review' || previousWorkflowStatus === 'Review') {
+    return;
+  }
+
+  const recipient = process.env.REVIEW_NOTIFICATION_EMAIL;
+  if (!recipient) {
+    strapi.log.warn('REVIEW_NOTIFICATION_EMAIL is not set — skipping page review notification email');
+    return;
+  }
+
+  const entry = await strapi.documents(uid).findOne({ documentId, fields: ['slug'] });
+  const pageLabel = entry?.slug ? `"${entry.slug}"` : documentId;
+
+  try {
+    await strapi.plugins['email'].services.email.send({
+      to: recipient,
+      subject: `Page ${pageLabel} moved to Review`,
+      text: `Page ${pageLabel} was just moved to the Review workflow status and is ready for approval.`,
+    });
+  } catch (error) {
+    strapi.log.error(`Failed to send review notification email for page ${pageLabel}: ${error.message}`);
+  }
 }
 
 // Any edit to content other than the workflow status itself sends it back to Draft, so
@@ -223,10 +236,6 @@ async function resetWorkflowStatusToDraftOnContentEdit(strapi, context) {
 
   const incomingStatus = 'workflowStatus' in data ? data.workflowStatus : existing.workflowStatus;
   const isExplicitStatusChange = incomingStatus !== existing.workflowStatus;
-
-  debugLog(
-    `--- update documentId=${documentId} existingStatus=${existing.workflowStatus} incomingStatus=${incomingStatus} isExplicitStatusChange=${isExplicitStatusChange} dataKeys=${Object.keys(data).join(',')}`
-  );
 
   if (isExplicitStatusChange || existing.workflowStatus === 'Draft') {
     return;
@@ -250,12 +259,21 @@ module.exports = {
         return next();
       }
 
+      let previousWorkflowStatus;
+      if (context.action === 'update' && context.params?.documentId) {
+        const existing = await strapi
+          .documents(context.uid)
+          .findOne({ documentId: context.params.documentId, fields: ['workflowStatus'] });
+        previousWorkflowStatus = existing?.workflowStatus;
+      }
+
       if (context.action === 'update') {
         await resetWorkflowStatusToDraftOnContentEdit(strapi, context);
       }
 
+      let effectiveStatus;
       if (context.action === 'create' || context.action === 'update') {
-        const effectiveStatus = await resolveEffectiveWorkflowStatus(strapi, context);
+        effectiveStatus = await resolveEffectiveWorkflowStatus(strapi, context);
 
         if (effectiveStatus === 'Approved' && !currentUserIsPublisherOrSuperAdmin(strapi)) {
           throw new ApplicationError('You do not have permission to save content in this state');
@@ -283,7 +301,23 @@ module.exports = {
         }
       }
 
-      return next();
+      const result = await next();
+
+      if (context.action === 'update' && context.params?.documentId) {
+        // Fire-and-forget: the save has already completed above, so the caller (and the Content
+        // Manager's save button) should not be kept waiting on the notification email being sent.
+        notifyIfEnteringReview(
+          strapi,
+          context.uid,
+          context.params.documentId,
+          previousWorkflowStatus,
+          effectiveStatus
+        ).catch((error) => {
+          strapi.log.error(`Failed to send review notification email: ${error.message}`);
+        });
+      }
+
+      return result;
     });
   },
 
