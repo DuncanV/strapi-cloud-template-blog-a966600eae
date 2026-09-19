@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_cards_icon_card_sections",
+  "info": {
+    "displayName": "Icon Card Section"
+  },
+  "options": {},
+  "attributes": {
+    "iconCards": {
+      "type": "component",
+      "component": "cards.icon-card",
+      "repeatable": true
+    }
+  },
+  "config": {}
+}

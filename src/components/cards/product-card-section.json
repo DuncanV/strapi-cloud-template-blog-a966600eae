@@ -1,0 +1,15 @@
+{
+  "collectionName": "components_cards_product_card_sections",
+  "info": {
+    "displayName": "Product Card Section"
+  },
+  "options": {},
+  "attributes": {
+    "productCards": {
+      "type": "component",
+      "component": "cards.product-card",
+      "repeatable": true
+    }
+  },
+  "config": {}
+}

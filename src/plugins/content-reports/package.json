@@ -1,0 +1,11 @@
+{
+  "name": "content-reports",
+  "version": "0.0.0",
+  "private": true,
+  "strapi": {
+    "kind": "plugin",
+    "name": "content-reports",
+    "displayName": "Content Reports"
+  },
+  "main": "strapi-server.js"
+}

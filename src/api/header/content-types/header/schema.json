@@ -11,6 +11,10 @@
   },
   "pluginOptions": {},
   "attributes": {
+    "slug": {
+      "type": "uid",
+      "required": true
+    },
     "logo": {
       "type": "media",
       "multiple": false,

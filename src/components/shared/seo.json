@@ -17,6 +17,9 @@
     "canonicalUrl": {
       "type": "string"
     },
+    "keywords": {
+      "type": "string"
+    },
     "favicon": {
       "type": "media",
       "multiple": false,

@@ -1,0 +1,11 @@
+{
+  "name": "seo-suggestions",
+  "version": "0.0.0",
+  "private": true,
+  "strapi": {
+    "kind": "plugin",
+    "name": "seo-suggestions",
+    "displayName": "SEO Suggestions"
+  },
+  "main": "strapi-server.js"
+}
