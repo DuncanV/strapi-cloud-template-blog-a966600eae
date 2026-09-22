@@ -3,6 +3,7 @@
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
+const crypto = require('crypto');
 const sharp = require('sharp');
 const { errors } = require('@strapi/utils');
 const { ApplicationError } = errors;
@@ -249,6 +250,32 @@ async function generateAndUploadHeroImage({ prompt, nameHint }) {
   }
 }
 
+// Hero image generation can take well over a minute, which exceeds Strapi Cloud's platform
+// request timeout — so it must never be awaited inside a single HTTP request/response cycle.
+// Instead we run it in the background and hand the caller a job id to poll (see the
+// /hero-image-job/:jobId route below).
+const heroImageJobs = new Map();
+
+function startHeroImageJob({ prompt, nameHint }) {
+  const jobId = crypto.randomUUID();
+  heroImageJobs.set(jobId, { status: 'pending' });
+
+  generateAndUploadHeroImage({ prompt, nameHint })
+    .then((uploaded) => {
+      heroImageJobs.set(jobId, {
+        status: 'done',
+        image: uploaded,
+        imageAltText: toSafeString(nameHint, 'Hero image').slice(0, 200),
+      });
+    })
+    .catch((error) => {
+      strapi.log.error(`Hero image generation job ${jobId} failed: ${error.message}`);
+      heroImageJobs.set(jobId, { status: 'error', error: error.message });
+    });
+
+  return jobId;
+}
+
 async function suggestSeoFields(pageBody) {
   const contentText = extractTextFromPageBody(pageBody);
   if (!contentText) {
@@ -490,26 +517,16 @@ async function generatePageContent({ description, tone, audience, includeHeroIma
     }
   }
 
+  let heroImageJobId = null;
   if (includeHeroImage) {
     const hero = pageBody.find((block) => block.__component === 'shared.hero');
     if (hero) {
-      try {
-        const imagePrompt =
-          `A professional marketing photo for a bank's business-banking website hero banner. ` +
-          `Page purpose: ${description}. ${tone ? `Tone: ${tone}. ` : ''}${audience ? `Audience: ${audience}. ` : ''}` +
-          'No text, no logos, no watermarks in the image.';
+      const imagePrompt =
+        `A professional marketing photo for a bank's business-banking website hero banner. ` +
+        `Page purpose: ${description}. ${tone ? `Tone: ${tone}. ` : ''}${audience ? `Audience: ${audience}. ` : ''}` +
+        'No text, no logos, no watermarks in the image.';
 
-        const uploaded = await generateAndUploadHeroImage({
-          prompt: imagePrompt,
-          nameHint: hero.heading,
-        });
-
-        hero.image = uploaded;
-        hero.imageAltText = toSafeString(hero.heading, 'Hero image').slice(0, 200);
-      } catch (error) {
-        strapi.log.error(`Hero image generation skipped: ${error.message}`);
-        warnings.push(`Page content was generated, but the hero image could not be created (${error.message}).`);
-      }
+      heroImageJobId = startHeroImageJob({ prompt: imagePrompt, nameHint: hero.heading });
     }
   }
 
@@ -517,6 +534,7 @@ async function generatePageContent({ description, tone, audience, includeHeroIma
     slug: toSlug(parsed.slug, 'new-page'),
     pageBody,
     warnings,
+    heroImageJobId,
   };
 }
 
@@ -536,6 +554,14 @@ module.exports = {
       method: 'POST',
       path: '/generate-page',
       handler: 'seo.generatePage',
+      config: {
+        auth: { scope: [] },
+      },
+    },
+    {
+      method: 'GET',
+      path: '/hero-image-job/:jobId',
+      handler: 'seo.heroImageJobStatus',
       config: {
         auth: { scope: [] },
       },
@@ -568,6 +594,17 @@ module.exports = {
           includeHeroImage: !!includeHeroImage,
         });
         ctx.body = generated;
+      },
+
+      async heroImageJobStatus(ctx) {
+        const { jobId } = ctx.params;
+        const job = heroImageJobs.get(jobId);
+
+        if (!job) {
+          return ctx.notFound('Unknown or expired hero image job');
+        }
+
+        ctx.body = job;
       },
     },
   },

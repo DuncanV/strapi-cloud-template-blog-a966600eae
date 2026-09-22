@@ -9,7 +9,7 @@ const PAGE_CONTENT_TYPE_UID = 'api::page.page';
 const GeneratePageModalContent = ({ onClose }) => {
   const getValues = useForm('GeneratePageModalContent', (state) => state.getValues);
   const onChange = useForm('GeneratePageModalContent', (state) => state.onChange);
-  const { post } = useFetchClient();
+  const { post, get } = useFetchClient();
   const { toggleNotification } = useNotification();
 
   const [description, setDescription] = React.useState('');
@@ -17,6 +17,20 @@ const GeneratePageModalContent = ({ onClose }) => {
   const [audience, setAudience] = React.useState('');
   const [includeHeroImage, setIncludeHeroImage] = React.useState(false);
   const [isGenerating, setIsGenerating] = React.useState(false);
+
+  // Image generation can take well over a minute, which is longer than a single HTTP request is
+  // allowed to stay open on Strapi Cloud — so /generate-page kicks the image off in the
+  // background and hands back a job id, and we poll this small status endpoint (each request
+  // is quick) until it's done rather than waiting on one long request.
+  const pollHeroImageJob = async (jobId) => {
+    for (;;) {
+      const { data: job } = await get(`/seo-suggestions/hero-image-job/${jobId}`);
+      if (job.status !== 'pending') {
+        return job;
+      }
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+    }
+  };
 
   const handleGenerate = async () => {
     if (!description.trim()) {
@@ -37,11 +51,31 @@ const GeneratePageModalContent = ({ onClose }) => {
       if (!values.slug && data.slug) {
         onChange('slug', data.slug);
       }
+
+      const warnings = [...(data.warnings || [])];
+
+      if (data.heroImageJobId) {
+        toggleNotification({
+          type: 'info',
+          message: 'Page content created, awaiting image creation.',
+        });
+        const job = await pollHeroImageJob(data.heroImageJobId);
+        if (job.status === 'done') {
+          const hero = data.pageBody.find((block) => block.__component === 'shared.hero');
+          if (hero) {
+            hero.image = job.image;
+            hero.imageAltText = job.imageAltText;
+          }
+        } else {
+          warnings.push(`Page content was generated, but the hero image could not be created (${job.error}).`);
+        }
+      }
+
       onChange('pageBody', data.pageBody);
 
-      const warningSuffix = data.warnings?.length ? ` (${data.warnings.join(' ')})` : '';
+      const warningSuffix = warnings.length ? ` (${warnings.join(' ')})` : '';
       toggleNotification({
-        type: data.warnings?.length ? 'warning' : 'success',
+        type: warnings.length ? 'warning' : 'success',
         message: `Sample page content generated — review it, then save.${warningSuffix}`,
       });
       onClose();
