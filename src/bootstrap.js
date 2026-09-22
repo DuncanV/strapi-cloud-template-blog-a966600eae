@@ -55,7 +55,26 @@ const PAGE_ROLE_ACTIONS = {
   'Page Publisher': ['create', 'read', 'update', 'publish', 'delete'],
 };
 
+const HEADER_CONTENT_TYPE = 'api::header.header';
+const FOOTER_CONTENT_TYPE = 'api::footer.footer';
+
+// Both roles pick an existing header/footer to relate to a page, so both need
+// at least read access — without it, the content-manager relation picker's
+// has-permissions policy rejects the request ("Policy Failed").
+const RELATION_CONTENT_TYPE_ROLE_ACTIONS = {
+  'Page Creator': ['read'],
+  'Page Publisher': ['read'],
+};
+
 const ACTIONS_WITHOUT_FIELDS_PROPERTY = ['publish', 'delete'];
+
+// Page content (hero images, card images, etc.) is built from media library
+// assets, so both roles need to browse it; Page Creator also needs to upload
+// new images while authoring, not just pick existing ones.
+const UPLOAD_PLUGIN_ROLE_ACTIONS = {
+  'Page Creator': ['plugin::upload.read', 'plugin::upload.assets.create'],
+  'Page Publisher': ['plugin::upload.read', 'plugin::upload.assets.create'],
+};
 
 async function createCustomAdminRoles() {
   const roleService = strapi.service('admin::role');
@@ -71,11 +90,11 @@ async function createCustomAdminRoles() {
   }
 }
 
-async function assignPageContentTypePermissions() {
+async function assignContentTypePermissions(subject, roleActions, fields) {
   const roleService = strapi.service('admin::role');
   const permissionService = strapi.service('admin::permission');
 
-  for (const [roleName, actions] of Object.entries(PAGE_ROLE_ACTIONS)) {
+  for (const [roleName, actions] of Object.entries(roleActions)) {
     const [role] = await roleService.find({ name: roleName });
     if (!role) {
       console.log(`Admin role "${roleName}" not found, skipping permission assignment`);
@@ -85,7 +104,7 @@ async function assignPageContentTypePermissions() {
     const existingActions = new Set(
       (
         await strapi.db.query('admin::permission').findMany({
-          where: { role: role.id, subject: PAGE_CONTENT_TYPE },
+          where: { role: role.id, subject },
         })
       ).map((permission) => permission.action)
     );
@@ -94,23 +113,68 @@ async function assignPageContentTypePermissions() {
       (action) => !existingActions.has(`plugin::content-manager.explorer.${action}`)
     );
     if (missingActions.length === 0) {
-      console.log(`Role "${roleName}" already has all required permissions for "${PAGE_CONTENT_TYPE}", skipping`);
+      console.log(`Role "${roleName}" already has all required permissions for "${subject}", skipping`);
       continue;
     }
 
     await permissionService.createMany(
       missingActions.map((action) => ({
         action: `plugin::content-manager.explorer.${action}`,
-        subject: PAGE_CONTENT_TYPE,
-        properties: ACTIONS_WITHOUT_FIELDS_PROPERTY.includes(action)
+        subject,
+        properties: ACTIONS_WITHOUT_FIELDS_PROPERTY.includes(action) || !fields
           ? {}
-          : { fields: PAGE_CONTENT_TYPE_FIELDS },
+          : { fields },
         conditions: [],
         role: role.id,
       }))
     );
-    console.log(`Assigned "${PAGE_CONTENT_TYPE}" permissions (${missingActions.join(', ')}) to role "${roleName}"`);
+    console.log(`Assigned "${subject}" permissions (${missingActions.join(', ')}) to role "${roleName}"`);
   }
+}
+
+async function assignPluginActionPermissions(roleActions) {
+  const roleService = strapi.service('admin::role');
+  const permissionService = strapi.service('admin::permission');
+
+  for (const [roleName, actions] of Object.entries(roleActions)) {
+    const [role] = await roleService.find({ name: roleName });
+    if (!role) {
+      console.log(`Admin role "${roleName}" not found, skipping permission assignment`);
+      continue;
+    }
+
+    const existingActions = new Set(
+      (
+        await strapi.db.query('admin::permission').findMany({
+          where: { role: role.id, action: actions },
+        })
+      ).map((permission) => permission.action)
+    );
+
+    const missingActions = actions.filter((action) => !existingActions.has(action));
+    if (missingActions.length === 0) {
+      console.log(`Role "${roleName}" already has all required plugin permissions, skipping`);
+      continue;
+    }
+
+    await permissionService.createMany(
+      missingActions.map((action) => ({
+        action,
+        subject: null,
+        properties: {},
+        conditions: [],
+        role: role.id,
+      }))
+    );
+    console.log(`Assigned plugin permissions (${missingActions.join(', ')}) to role "${roleName}"`);
+  }
+}
+
+async function assignPageContentTypePermissions() {
+  await assignContentTypePermissions(PAGE_CONTENT_TYPE, PAGE_ROLE_ACTIONS, PAGE_CONTENT_TYPE_FIELDS);
+  await assignContentTypePermissions(HEADER_CONTENT_TYPE, RELATION_CONTENT_TYPE_ROLE_ACTIONS);
+  await assignContentTypePermissions(FOOTER_CONTENT_TYPE, RELATION_CONTENT_TYPE_ROLE_ACTIONS);
+  await assignPluginActionPermissions(UPLOAD_PLUGIN_ROLE_ACTIONS);
 }
 
 async function isFirstRun() {
