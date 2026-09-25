@@ -180,6 +180,7 @@ export interface SharedLink extends Struct.ComponentSchema {
     icon: 'earth';
   };
   attributes: {
+    dataCmsTitle: Schema.Attribute.String;
     displayText: Schema.Attribute.String & Schema.Attribute.Required;
     openInNewTab: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     url: Schema.Attribute.String & Schema.Attribute.Required;

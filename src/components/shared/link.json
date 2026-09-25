@@ -17,6 +17,9 @@
     "openInNewTab": {
       "type": "boolean",
       "default": false
+    },
+    "dataCmsTitle": {
+      "type": "string"
     }
   },
   "config": {}
