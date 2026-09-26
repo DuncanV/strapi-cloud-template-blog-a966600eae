@@ -1,0 +1,30 @@
+{
+  "collectionName": "components_shared_responsive_images",
+  "info": {
+    "displayName": "ResponsiveImage",
+    "icon": "paint"
+  },
+  "options": {},
+  "attributes": {
+    "image": {
+      "type": "media",
+      "multiple": false,
+      "required": true,
+      "allowedTypes": [
+        "images"
+      ]
+    },
+    "resolution": {
+      "type": "enumeration",
+      "default": "all",
+      "enum": [
+        "all",
+        "px-1440",
+        "px-1024",
+        "px-768",
+        "px-425"
+      ]
+    }
+  },
+  "config": {}
+}

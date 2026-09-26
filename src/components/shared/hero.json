@@ -13,14 +13,6 @@
     "description": {
       "type": "text"
     },
-    "image": {
-      "type": "media",
-      "multiple": false,
-      "required": true,
-      "allowedTypes": [
-        "images"
-      ]
-    },
     "imageAltText": {
       "type": "string",
       "required": true,
@@ -30,6 +22,11 @@
       "type": "component",
       "component": "shared.cta",
       "repeatable": false
+    },
+    "responsiveImage": {
+      "type": "component",
+      "component": "shared.responsive-image",
+      "repeatable": true
     }
   },
   "config": {}

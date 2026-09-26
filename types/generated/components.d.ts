@@ -168,8 +168,11 @@ export interface SharedHero extends Struct.ComponentSchema {
     cta: Schema.Attribute.Component<'shared.cta', false>;
     description: Schema.Attribute.Text;
     heading: Schema.Attribute.Text & Schema.Attribute.Required;
-    image: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
     imageAltText: Schema.Attribute.String & Schema.Attribute.Required;
+    responsiveImage: Schema.Attribute.Component<
+      'shared.responsive-image',
+      true
+    >;
   };
 }
 
@@ -184,6 +187,21 @@ export interface SharedLink extends Struct.ComponentSchema {
     displayText: Schema.Attribute.String & Schema.Attribute.Required;
     openInNewTab: Schema.Attribute.Boolean & Schema.Attribute.DefaultTo<false>;
     url: Schema.Attribute.String & Schema.Attribute.Required;
+  };
+}
+
+export interface SharedResponsiveImage extends Struct.ComponentSchema {
+  collectionName: 'components_shared_responsive_images';
+  info: {
+    displayName: 'ResponsiveImage';
+    icon: 'paint';
+  };
+  attributes: {
+    image: Schema.Attribute.Media<'images'> & Schema.Attribute.Required;
+    resolution: Schema.Attribute.Enumeration<
+      ['all', 'px-1440', 'px-1024', 'px-768', 'px-425']
+    > &
+      Schema.Attribute.DefaultTo<'all'>;
   };
 }
 
@@ -233,6 +251,7 @@ declare module '@strapi/strapi' {
       'shared.heading': SharedHeading;
       'shared.hero': SharedHero;
       'shared.link': SharedLink;
+      'shared.responsive-image': SharedResponsiveImage;
       'shared.seo': SharedSeo;
       'shared.video': SharedVideo;
     }

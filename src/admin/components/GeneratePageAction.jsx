@@ -63,7 +63,7 @@ const GeneratePageModalContent = ({ onClose }) => {
         if (job.status === 'done') {
           const hero = data.pageBody.find((block) => block.__component === 'shared.hero');
           if (hero) {
-            hero.image = job.image;
+            hero.responsiveImage = [{ image: job.image, resolution: 'all' }];
             hero.imageAltText = job.imageAltText;
           }
         } else {
